@@ -8,6 +8,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.*;
+import org.jfree.chart.axis.ValueAxis;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -35,6 +36,7 @@ public class DV extends JFrame implements DocumentListener {
     JTextArea analyticsText;
     XYSeriesCollection data;
     JFreeChart chart;
+    XYPlot plot;
 
     public void start() {
 
@@ -70,7 +72,7 @@ public class DV extends JFrame implements DocumentListener {
         //Code for creating graph
         data = new XYSeriesCollection();
         chart = ChartFactory.createXYLineChart("", "", "", data);
-        XYPlot plot = (XYPlot) chart.getPlot();
+        plot = (XYPlot) chart.getPlot();
         plot.setDrawingSupplier(new DefaultDrawingSupplier(
                 new Paint[] {Color.RED},
                 DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
@@ -83,16 +85,32 @@ public class DV extends JFrame implements DocumentListener {
         plot.setRangeGridlinesVisible(false);
         chart.setBorderVisible(false);
         ChartPanel graphPanel = new ChartPanel(chart);
+        graphPanel.setPreferredSize(new Dimension(1000, 630));
         //Code for creating graph end
 
         graphPane = new JScrollPane(graphPanel);
-        graphPane.setPreferredSize(new Dimension(1000, 650));
+        graphPane.setAlignmentX(Component.CENTER_ALIGNMENT);
         graphPane.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
         constraints.weightx = 0.7;
         constraints.gridx = 0;
         constraints.gridy = 0;
+        
+        JPanel graphDomainPanel = new JPanel();
+        graphDomainPanel.setLayout(new BoxLayout(graphDomainPanel, BoxLayout.Y_AXIS));
+        graphDomainPanel.setPreferredSize(new Dimension(1000, 650));
+        graphDomainPanel.add(graphPane);
+        
+        //Create slider to handle range and grouping
+        JPanel domainPanel = new JPanel();
+        JSlider domainSlider = new JSlider();
+        domainSlider.setPreferredSize(new Dimension(1000, 20));
+        domainSlider.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        domainPanel.add(domainSlider);
+        
+        graphDomainPanel.add(domainPanel);
 
-        mainPanel.add(graphPane, constraints);
+        mainPanel.add(graphDomainPanel, constraints);
 
         //Create the angles list and add it to the corresponding scroll pane
         sliderPanel = new JPanel(new GridLayout(1,0));
@@ -300,6 +318,10 @@ public class DV extends JFrame implements DocumentListener {
 
     void drawGraphs() {
         data.removeAllSeries();
+        ValueAxis domainView = plot.getDomainAxis();
+        domainView.setRange(0, Main.userInputData.get(0).fieldLength);
+        ValueAxis rangeView = plot.getRangeAxis();
+        rangeView.setRange(0, Main.userInputData.get(0).fieldLength);
         for(int i = 0; i < Main.userInputData.size(); i++)
         {
             ArrayList<XYSeries> graphObjects = new ArrayList<XYSeries>();
